@@ -72,6 +72,12 @@ class GeoShell extends Shell
         debug($var);
     }
 
+    /**
+     * build import files from database
+     * @param  string $type   table to import
+     * @param  [type] $locale [description]
+     * @return [type]         [description]
+     */
     public function build($type, $locale)
     {
         $db = ConnectionManager::get('default');
