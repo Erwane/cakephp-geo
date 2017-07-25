@@ -4,6 +4,7 @@ namespace Geo\Shell;
 use Cake\Console\Shell;
 use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
+use Cake\I18n\I18n;
 use Cake\ORM\TableRegistry;
 
 /**
@@ -37,6 +38,9 @@ class GeoShell extends Shell
                     'description' => [
                         "Seed the application default locale",
                     ],
+                    'arguments' => [
+                        'type' => ['help' => "Type of data to build (countries)", 'required' => true],
+                    ],
                 ]
             ])
             ->addSubcommand('build', [
@@ -67,9 +71,16 @@ class GeoShell extends Shell
         $this->hr();
     }
 
-    public function seed()
+    /**
+     * Seed countri
+     * @return [type] [description]
+     */
+    public function seed($type)
     {
-        debug($var);
+        $method = '_seed' . ucfirst(strtolower($type));
+        if (method_exists($this, $method)) {
+            $this->{$method}();
+        }
     }
 
     /**
@@ -87,6 +98,35 @@ class GeoShell extends Shell
         if (method_exists($this, $method)) {
             $this->{$method}($db, $locale);
         }
+    }
+
+    private function _seedCountries()
+    {
+        $filepath = Plugin::path('Geo') . 'resources' . DS . I18n::locale() . '.countries.php';
+
+        if (!file_exists($filepath)) {
+            $this->error("Locale " . I18n::locale() . " Not Found");
+            return;
+        }
+
+        $datas = include $filepath;
+
+        $hasError = false;
+        foreach ($datas as $data) {
+            try {
+
+            } catch (Exception $e) {
+
+            }
+            $entity = $this->GeoCountries->newEntity($data);
+            $hasError = $hasError || !$this->GeoCountries->save($entity);
+        }
+
+        if ($hasError) {
+            $this->error("An error occured during seed Countries for " . I18n::locale());
+        }
+
+        return $hasError;
     }
 
     /**
@@ -118,7 +158,7 @@ return [
 EOF;
 
         foreach ($countries as $country) {
-            $content .= sprintf("    ['id' => %d, 'title' => \"%s\", 'alpha2' => \"%s\", 'alpha3' => \"%s\", 'currency' => \"%s\", 'sort' => 65535];" . PHP_EOL,
+            $content .= sprintf("    ['id' => %d, 'title' => \"%s\", 'alpha2' => \"%s\", 'alpha3' => \"%s\", 'currency' => \"%s\", 'sort' => 65535]," . PHP_EOL,
                 $country->id,
                 $country->title,
                 $country->alpha2,
