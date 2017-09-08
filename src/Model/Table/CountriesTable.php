@@ -21,7 +21,7 @@ class CountriesTable extends Table
         parent::initialize($config);
 
         $this->setTable('geo_countries');
-        $this->setDisplayField('id');
+        $this->setDisplayField('title');
         $this->setPrimaryKey('id');
 
         // Translate Behavior
